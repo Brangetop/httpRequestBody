@@ -61,7 +61,7 @@ func payHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	bank.Add(1000)
-	http.HandleFunc("/pay", payHandler)
+	http.HandleFunc("PATCH /pay", payHandler)
 
 	http.ListenAndServe(":9091", nil)
 }
