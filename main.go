@@ -15,6 +15,8 @@ var mtx = sync.Mutex{}
 func payHandler(w http.ResponseWriter, r *http.Request) {
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+
 		msg := "failed to read r.Body" + err.Error()
 		fmt.Println(msg)
 		_, err := w.Write([]byte(msg))
@@ -27,6 +29,8 @@ func payHandler(w http.ResponseWriter, r *http.Request) {
 
 	paymentAmount, err := strconv.ParseInt(string(requestBody), 10, 64)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+
 		msg := "error while parsing r.Body" + err.Error()
 		fmt.Println(msg)
 		_, err := w.Write([]byte(msg))
@@ -38,6 +42,8 @@ func payHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mtx.Lock()
+	defer mtx.Unlock()
+
 	if bank.Load()-paymentAmount >= 0 {
 		bank.Add(-paymentAmount)
 		fmt.Println("payment succeded!")
@@ -51,7 +57,6 @@ func payHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	mtx.Unlock()
 }
 
 func main() {
